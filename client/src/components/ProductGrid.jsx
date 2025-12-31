@@ -10,7 +10,7 @@ const ProductGrid = ({ onProductClick }) => {
     }
 
     return (
-        <div className="product-grid">
+        <div className="product-grid container">
             {products.map(product => (
                 <ProductCard
                     key={product.id}

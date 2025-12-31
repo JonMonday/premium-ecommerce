@@ -11,7 +11,7 @@ const Newsletter = () => {
     };
 
     return (
-        <section className="newsletter glass container">
+        <section className="newsletter glass">
             <div className="newsletter-content">
                 <div className="newsletter-text">
                     <h3>JOIN THE BOUTIQUE CLUB</h3>
@@ -24,8 +24,9 @@ const Newsletter = () => {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        className='newsletter-input'
                     />
-                    <button type="submit" className="btn btn-primary">
+                    <button type="submit" className="btn btn-primary newsletter-btn">
                         Subscribe
                     </button>
                 </form>

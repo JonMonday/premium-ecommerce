@@ -31,8 +31,14 @@ const TopProducts = () => {
         const fetchTop = async () => {
             try {
                 // Fetch top 12 products to ensure we have enough for 2 rows
-                const res = await axios.get(`${API_URL}/products?sort=popular`);
-                setTopProducts(res.data.slice(0, 12));
+                const res = await axios.get(`${API_URL}/products`, {
+                    params: { sort: "popular", page: 1, limit: 12 }
+                });
+
+                const data = res.data;
+                const items = Array.isArray(data) ? data : (data.items || []);
+
+                setTopProducts(items.slice(0, 12));
             } catch (err) {
                 console.error('Error fetching top products:', err);
             } finally {
