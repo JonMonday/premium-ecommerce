@@ -1,0 +1,141 @@
+/* ShopPage.css */
+
+.shop-page {
+    position: relative;
+    min-height: 100vh;
+    padding: 24px 0 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.shop-page::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background:
+        radial-gradient(900px 650px at 15% 10%, rgba(255, 153, 0, .22), transparent 60%),
+        radial-gradient(900px 650px at 80% 20%, rgba(99, 102, 241, .20), transparent 62%),
+        radial-gradient(800px 600px at 55% 85%, rgba(34, 197, 94, .14), transparent 62%);
+    z-index: 0;
+}
+
+.shop-page::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background:
+        radial-gradient(900px 700px at 85% 80%, rgba(236, 72, 153, .12), transparent 62%),
+        radial-gradient(800px 600px at 20% 75%, rgba(56, 189, 248, .14), transparent 62%);
+    opacity: .7;
+    z-index: 0;
+}
+
+.shop-page>* {
+    position: relative;
+    z-index: 1;
+}
+
+.shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 14px;
+    padding-inline: 40px;
+}
+
+.shop-title {
+    margin: 0;
+}
+
+.shop-subtitle {
+    margin: 6px 0 0;
+    opacity: 0.75;
+}
+
+.shop-count {
+    opacity: 0.75;
+}
+
+.shop-clear-filter {
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    background: #fff;
+    padding: 10px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.shop-clear-filter:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 28px 0 40px;
+    align-items: center;
+}
+
+.page-btn {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: white;
+    padding: 10px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: normal;
+    font-size: 0.85rem;
+    transition: 0.15s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-number {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #fff;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.page-number.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.page-ellipsis {
+    padding: 0 6px;
+    opacity: 0.6;
+    font-weight: 800;
+}

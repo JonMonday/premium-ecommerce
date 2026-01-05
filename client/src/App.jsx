@@ -3,14 +3,15 @@ import axios from 'axios';
 import './App.css';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import RegistrationModal from './components/RegistrationModal';
-import Cart from './components/Cart';
-import Checkout from './components/Checkout';
-import HomePage from './components/HomePage';
-import ShopPage from './components/ShopPage';
-import Footer from './components/Footer';
-import ProductPage from './components/ProductPage';
+import Header from './components/Header/Header';
+import AuthModal from './components/AuthModal/AuthModal';
+import Cart from './components/Cart/Cart';
+import Checkout from './components/Checkout/Checkout';
+import HomePage from './pages/HomePage';
+import ShopPage from './pages/ShopPage/ShopPage';
+import Footer from './components/Footer/Footer';
+import ProductPage from './pages/ProductPage/ProductPage';
+
 
 // Context for User and Cart
 const AppContext = createContext();
@@ -18,12 +19,16 @@ export const useAppContext = () => useContext(AppContext);
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [likes, setLikes] = useState({ products: [], collections: [] });
+
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [activeProductTitle, setActiveProductTitle] = useState('');
+
 
 
   // categories tree: [{id,name,icon,subcategories:[...]}]
@@ -90,15 +95,67 @@ const App = () => {
       const res = await axios.post(`${API_URL}/users/identify`, { device_id: deviceId });
       if (res.data && res.data.username) {
         setUser(res.data);
+        fetchUserActivity(deviceId);
       } else {
-        setIsRegistering(true);
+        // Just identified as an anonymous user/device
+        setUser({ device_id: deviceId });
       }
     } catch (err) {
       console.error('Identification error:', err);
-      // Fallback to registration for any error (e.g. 404)
-      setIsRegistering(true);
+      setUser({ device_id: deviceId });
     }
   };
+
+  const fetchUserActivity = async (deviceId) => {
+    try {
+      const [wishRes, likeRes] = await Promise.all([
+        axios.get(`${API_URL}/wishlist/${deviceId}`),
+        axios.get(`${API_URL}/likes/${deviceId}`)
+      ]);
+      setWishlist(wishRes.data || []);
+      setLikes(likeRes.data || { products: [], collections: [] });
+    } catch (err) {
+      console.error('Activity fetch error:', err);
+    }
+  };
+
+  const toggleWishlist = async (productId) => {
+    const deviceId = user?.device_id;
+    if (!deviceId) return setIsAuthOpen(true);
+    try {
+      const res = await axios.post(`${API_URL}/wishlist/toggle`, { device_id: deviceId, product_id: productId });
+      if (res.data.action === 'added') {
+        // Fetch product detail to add to local state or just refetch wishlist
+        const prodRes = await axios.get(`${API_URL}/products/${productId}`);
+        setWishlist(prev => [...prev, prodRes.data]);
+      } else {
+        setWishlist(prev => prev.filter(p => p.id !== productId));
+      }
+    } catch (err) {
+      console.error('Wishlist error:', err);
+    }
+  };
+
+  const toggleLike = async (type, id) => {
+    const deviceId = user?.device_id;
+    if (!deviceId) return setIsAuthOpen(true);
+    try {
+      const payload = { device_id: deviceId };
+      if (type === 'product') payload.product_id = id;
+      else payload.collection_id = id;
+
+      await axios.post(`${API_URL}/likes/toggle`, payload);
+      const key = type === 'product' ? 'products' : 'collections';
+      setLikes(prev => {
+        const current = prev[key];
+        if (current.includes(id)) return { ...prev, [key]: current.filter(x => x !== id) };
+        return { ...prev, [key]: [...current, id] };
+      });
+    } catch (err) {
+      console.error('Like error:', err);
+    }
+  };
+
 
   const fetchCategoriesTree = async () => {
     try {
@@ -157,22 +214,12 @@ const App = () => {
     setPage(1);
   };
 
-  const registerUser = async (formData) => {
-    const deviceId = localStorage.getItem('boutique_device_id');
-    try {
-      const res = await axios.post(`${API_URL}/users/identify`, {
-        device_id: deviceId,
-        ...formData,
-      });
-      setUser(res.data);
-      setIsRegistering(false);
-      alert(
-        'Registration successful! Please check your email for confirmation link (see server console).'
-      );
-    } catch (err) {
-      alert('Registration failed. Please try again.');
-    }
+  const handleAuthenticated = (userData) => {
+    setUser(userData);
+    setIsAuthOpen(false);
+    fetchUserActivity(userData.device_id);
   };
+
 
   const addToCart = (product) => {
     setCart((prev) => [...prev, product]);
@@ -227,6 +274,15 @@ const App = () => {
         // product modal
         selectedProduct,
         setSelectedProduct,
+
+        // social
+        wishlist,
+        likes,
+        toggleWishlist,
+        toggleLike,
+        isAuthOpen,
+        setIsAuthOpen,
+
       }}
     >
       <Router>
@@ -243,12 +299,13 @@ const App = () => {
 
           <Footer />
 
-          {isRegistering && (
-            <RegistrationModal
-              onRegister={registerUser}
-              onSkip={() => setIsRegistering(false)}
+          {isAuthOpen && (
+            <AuthModal
+              onAuthenticated={handleAuthenticated}
+              onClose={() => setIsAuthOpen(false)}
             />
           )}
+
 
 
 

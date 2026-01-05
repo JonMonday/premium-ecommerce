@@ -23,7 +23,14 @@ const initDb = () => {
       db.run(`DROP TABLE IF EXISTS hero_products`);
       db.run(`DROP TABLE IF EXISTS product_images`);
       db.run(`DROP TABLE IF EXISTS product_categories`);
+      db.run(`DROP TABLE IF EXISTS wishlists`);
+      db.run(`DROP TABLE IF EXISTS product_likes`);
+      db.run(`DROP TABLE IF EXISTS collection_likes`);
+      db.run(`DROP TABLE IF EXISTS product_variants`);
+      db.run(`DROP TABLE IF EXISTS sizes`);
+      db.run(`DROP TABLE IF EXISTS colors`);
       db.run(`DROP TABLE IF EXISTS products`);
+      db.run(`DROP TABLE IF EXISTS collections`);
       db.run(`DROP TABLE IF EXISTS users`);
       db.run(`DROP TABLE IF EXISTS categories`);
 
@@ -32,13 +39,15 @@ const initDb = () => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         icon TEXT,
+        description TEXT,
+        banner_image TEXT,
         parent_id INTEGER,
         FOREIGN KEY (parent_id) REFERENCES categories (id) ON DELETE CASCADE
       )`);
 
       db.run(`CREATE INDEX IF NOT EXISTS idx_categories_parent ON categories(parent_id)`);
 
-      // Users table (Device ID tracking)
+      // Users table (Device ID tracking + OTP)
       db.run(`CREATE TABLE IF NOT EXISTS users (
         device_id TEXT PRIMARY KEY,
         username TEXT NOT NULL,
@@ -46,14 +55,43 @@ const initDb = () => {
         phone_number TEXT NOT NULL,
         avatar_url TEXT,
         location TEXT,
+        otp TEXT,
+        otp_expiry DATETIME,
         is_confirmed INTEGER DEFAULT 0,
         confirmation_token TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`);
 
+      // Collections table
+      db.run(`CREATE TABLE IF NOT EXISTS collections (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        banner_image TEXT,
+        average_rating REAL DEFAULT 0,
+        review_count INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`);
+
+      // Sizes Table
+      db.run(`CREATE TABLE IF NOT EXISTS sizes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        category_type TEXT -- "general", "shoes", "bags", etc
+      )`);
+
+      // Colors Table
+      db.run(`CREATE TABLE IF NOT EXISTS colors (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        hex_code TEXT NOT NULL UNIQUE
+      )`);
+
       // Products table
       db.run(`CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        collection_id INTEGER,
         name TEXT NOT NULL,
         description TEXT,
         price REAL NOT NULL,
@@ -61,7 +99,49 @@ const initDb = () => {
         review_count INTEGER DEFAULT 0,
         badge TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (collection_id) REFERENCES collections (id) ON DELETE SET NULL
+      )`);
+
+      // Product Variants table (Size/Color/Inventory)
+      db.run(`CREATE TABLE IF NOT EXISTS product_variants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        size_id INTEGER,
+        color_id INTEGER,
+        stock_quantity INTEGER DEFAULT 0,
+        FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
+        FOREIGN KEY (size_id) REFERENCES sizes (id) ON DELETE SET NULL,
+        FOREIGN KEY (color_id) REFERENCES colors (id) ON DELETE SET NULL
+      )`);
+
+      db.run(`CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id)`);
+
+      // Wishlists
+      db.run(`CREATE TABLE IF NOT EXISTS wishlists (
+        user_id TEXT NOT NULL,
+        product_id INTEGER NOT NULL,
+        PRIMARY KEY (user_id, product_id),
+        FOREIGN KEY (user_id) REFERENCES users (device_id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
+      )`);
+
+      // Likes (Products)
+      db.run(`CREATE TABLE IF NOT EXISTS product_likes (
+        user_id TEXT NOT NULL,
+        product_id INTEGER NOT NULL,
+        PRIMARY KEY (user_id, product_id),
+        FOREIGN KEY (user_id) REFERENCES users (device_id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
+      )`);
+
+      // Likes (Collections)
+      db.run(`CREATE TABLE IF NOT EXISTS collection_likes (
+        user_id TEXT NOT NULL,
+        collection_id INTEGER NOT NULL,
+        PRIMARY KEY (user_id, collection_id),
+        FOREIGN KEY (user_id) REFERENCES users (device_id) ON DELETE CASCADE,
+        FOREIGN KEY (collection_id) REFERENCES collections (id) ON DELETE CASCADE
       )`);
 
       // Product <-> Categories (supports primary category + extra tags)
@@ -90,16 +170,20 @@ const initDb = () => {
 
       db.run(`CREATE INDEX IF NOT EXISTS idx_images_product ON product_images(product_id)`);
 
-      // Reviews table (Linked to users via device_id)
+      // Multi-entity Reviews table
       db.run(`CREATE TABLE IF NOT EXISTS reviews (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id INTEGER,
+        collection_id INTEGER,
+        promotion_id INTEGER,
         device_id TEXT,
         rating INTEGER,
         comment TEXT,
         likes_count INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
+        FOREIGN KEY (collection_id) REFERENCES collections (id) ON DELETE CASCADE,
+        FOREIGN KEY (promotion_id) REFERENCES promotions (id) ON DELETE CASCADE,
         FOREIGN KEY (device_id) REFERENCES users (device_id) ON DELETE SET NULL
       )`);
 
@@ -136,6 +220,8 @@ const initDb = () => {
         start_at DATETIME,
         end_at DATETIME,
         priority INTEGER DEFAULT 0,
+        average_rating REAL DEFAULT 0,
+        review_count INTEGER DEFAULT 0,
         is_active INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`);

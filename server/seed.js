@@ -1,438 +1,203 @@
 const { db, initDb } = require('./db');
 
-// Seed database with products, categories (with subcategories), users, reviews, hero products, and promotions
 const seed = async () => {
     await initDb();
 
-    // Top-level categories (parents)
+    db.run('PRAGMA foreign_keys = OFF');
+
+    // Standard Sizes
+    const sizes = [
+        { name: 'XS', type: 'apparel' }, { name: 'S', type: 'apparel' }, { name: 'M', type: 'apparel' },
+        { name: 'L', type: 'apparel' }, { name: 'XL', type: 'apparel' }, { name: 'XXL', type: 'apparel' },
+        { name: '6', type: 'shoes' }, { name: '7', type: 'shoes' }, { name: '8', type: 'shoes' },
+        { name: '9', type: 'shoes' }, { name: '10', type: 'shoes' }, { name: '11', type: 'shoes' }, { name: '12', type: 'shoes' },
+        { name: 'Small', type: 'bags' }, { name: 'Medium', type: 'bags' }, { name: 'Large', type: 'bags' }, { name: 'One Size', type: 'bags' }
+    ];
+
+    // Standard Colors
+    const colors = [
+        { name: 'Midnight Black', hex: '#121212' },
+        { name: 'Arctic White', hex: '#F0F8FF' },
+        { name: 'Ruby Red', hex: '#E0115F' },
+        { name: 'Ocean Blue', hex: '#0077BE' },
+        { name: 'Forest Green', hex: '#228B22' },
+        { name: 'Desert Sand', hex: '#EDC9AF' },
+        { name: 'Royal Gold', hex: '#D4AF37' },
+        { name: 'Silver Mist', hex: '#C0C0C0' },
+        { name: 'Lavender', hex: '#E6E6FA' },
+        { name: 'Rose Quartz', hex: '#F7CAC9' }
+    ];
+
     const parentCategories = [
-        { id: 1, name: 'Computers & Accessories', icon: 'Laptop', parent_id: null },
-        { id: 2, name: 'Video Games', icon: 'Gamepad', parent_id: null },
-        { id: 3, name: 'Toys & Games', icon: 'ToyBox', parent_id: null },
-        { id: 4, name: 'Electronics', icon: 'Cpu', parent_id: null },
-        { id: 5, name: 'Home & Kitchen', icon: 'Home', parent_id: null },
-        { id: 6, name: 'Fashion', icon: 'Shirt', parent_id: null },
+        { id: 1, name: 'Apparel', icon: 'Shirt', description: 'Premium clothing for every occasion.', banner_image: 'https://images.unsplash.com/photo-1445205170230-053b830c6039?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: null },
+        { id: 2, name: 'Accessories', icon: 'Gem', description: 'The perfect finishing touches.', banner_image: 'https://images.unsplash.com/photo-1512163143273-bde0e3cc7407?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: null },
+        { id: 3, name: 'Footwear', icon: 'Footprints', description: 'Step out in style and comfort.', banner_image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: null },
+        { id: 4, name: 'Bags', icon: 'ShoppingBag', description: 'Elegance you can carry.', banner_image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: null },
     ];
 
-    // Subcategories (children)
     const subCategories = [
-        { id: 7, name: 'Laptops', icon: null, parent_id: 1 },
-        { id: 8, name: 'Keyboards', icon: null, parent_id: 1 },
-
-        { id: 9, name: 'VR', icon: null, parent_id: 2 },
-        { id: 10, name: 'Consoles', icon: null, parent_id: 2 },
-
-        { id: 11, name: 'Headphones', icon: null, parent_id: 4 },
-        { id: 12, name: 'Smart Watches', icon: null, parent_id: 4 },
-
-        { id: 13, name: 'Coffee & Espresso', icon: null, parent_id: 5 },
-        { id: 14, name: 'Home Decor', icon: null, parent_id: 5 },
-
-        { id: 15, name: 'Jackets', icon: null, parent_id: 6 },
+        { id: 5, name: 'Jackets & Coats', icon: null, description: 'Outerwear for all seasons.', banner_image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: 1, type: 'apparel' },
+        { id: 6, name: 'Dresses', icon: null, description: 'Elegant and casual dresses.', banner_image: 'https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: 1, type: 'apparel' },
+        { id: 7, name: 'Jewelry', icon: null, description: 'Timeless pieces for you.', banner_image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: 2, type: 'bags' }, // Jewelry uses bag-like sizes (One Size)
+        { id: 8, name: 'Watches', icon: null, description: 'Precision and luxury.', banner_image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: 2, type: 'bags' },
+        { id: 9, name: 'Sneakers', icon: null, description: 'Streetwear essentials.', banner_image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: 3, type: 'shoes' },
+        { id: 10, name: 'Handbags', icon: null, description: 'Signature handbags.', banner_image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=1200&h=400', parent_id: 4, type: 'bags' },
     ];
 
-    const categories = [...parentCategories, ...subCategories];
-    const leafCategoryIds = subCategories.map((c) => c.id);
-
-    const uniqueProducts = [
-        {
-            id: 1,
-            name: 'ZenBook Pro Ultra',
-            description:
-                'Designed for productivity and creatives. Featuring a 4K OLED display and a high-end processor.',
-            price: 1899.99,
-            primaryCategoryId: 7,
-            images: [
-                {
-                    path: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 1,
-                    sort_order: 0,
-                },
-                {
-                    path: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 0,
-                    sort_order: 1,
-                },
-            ],
-            rating: 4.9,
-            reviews: 1240,
-            badge: '#1 in Computers',
-        },
-        {
-            id: 2,
-            name: 'Aether Noise-Canceling Headphones',
-            description:
-                'Pure sound with 30+ hours battery and industry-leading noise cancellation.',
-            price: 349.0,
-            primaryCategoryId: 11,
-            images: [
-                {
-                    path: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 1,
-                    sort_order: 0,
-                },
-                {
-                    path: 'https://images.unsplash.com/photo-1546435770-a3e426ff472b?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 0,
-                    sort_order: 1,
-                },
-            ],
-            rating: 4.8,
-            reviews: 850,
-            badge: 'Must Have',
-        },
-        {
-            id: 3,
-            name: 'Artisan Barista Espresso Machine',
-            description:
-                'Cafe-quality espresso at home with precision temperature control and steam wand.',
-            price: 599.5,
-            primaryCategoryId: 13,
-            images: [
-                {
-                    path: 'https://images.unsplash.com/photo-1510551310160-589462daf284?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 1,
-                    sort_order: 0,
-                },
-                {
-                    path: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 0,
-                    sort_order: 1,
-                },
-            ],
-            rating: 4.7,
-            reviews: 430,
-            badge: 'Top Gift',
-        },
-        {
-            id: 4,
-            name: 'Nova Core Smart Watch S7',
-            description:
-                'Advanced health sensors, GPS, and a stunning Sapphire glass display.',
-            price: 299.0,
-            primaryCategoryId: 12,
-            images: [
-                {
-                    path: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 1,
-                    sort_order: 0,
-                },
-            ],
-            rating: 4.6,
-            reviews: 2100,
-            badge: 'New Arrival',
-        },
-        {
-            id: 5,
-            name: 'QuestMaster VR Pro 3',
-            description:
-                'Wireless VR with high-resolution lenses and spatial audio for immersive gaming.',
-            price: 499.0,
-            primaryCategoryId: 9,
-            images: [
-                {
-                    path: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 1,
-                    sort_order: 0,
-                },
-            ],
-            rating: 4.9,
-            reviews: 670,
-            badge: 'Best in Gaming',
-        },
-        {
-            id: 6,
-            name: 'Mechanical Force RGB Keyboard',
-            description:
-                'Custom tactile switches and per-key RGB lighting built for gamers.',
-            price: 129.99,
-            primaryCategoryId: 8,
-            images: [
-                {
-                    path: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 1,
-                    sort_order: 0,
-                },
-            ],
-            rating: 4.5,
-            reviews: 1200,
-            badge: null,
-        },
-        {
-            id: 7,
-            name: 'Leather Knight Signature Jacket',
-            description:
-                'Handcrafted full-grain leather jacket with a timeless silhouette.',
-            price: 450.0,
-            primaryCategoryId: 15,
-            images: [
-                {
-                    path: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 1,
-                    sort_order: 0,
-                },
-            ],
-            rating: 4.9,
-            reviews: 150,
-            badge: 'Luxury Select',
-        },
-        {
-            id: 8,
-            name: 'Velvet Dream Sofa Cushion Set',
-            description:
-                'Soft velvet cushions in jewel tones. Perfect pop of color for boutique living.',
-            price: 75.0,
-            primaryCategoryId: 14,
-            images: [
-                {
-                    path: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=600&h=600',
-                    is_primary: 1,
-                    sort_order: 0,
-                },
-            ],
-            rating: 4.4,
-            reviews: 80,
-            badge: null,
-        },
+    const collections = [
+        { id: 1, name: 'Winter 2026', description: 'Embrace the cold with our latest seasonal arrivals.', banner_image: 'https://images.unsplash.com/photo-1478479405421-ce83c92fb3ba?auto=format&fit=crop&q=80&w=1200&h=500' },
+        { id: 2, name: 'Spring 2026', description: 'Fresh looks for a fresh new start.', banner_image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&q=80&w=1200&h=500' },
+        { id: 3, name: 'Modern Essentials', description: 'The foundation of a timeless wardrobe.', banner_image: 'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?auto=format&fit=crop&q=80&w=1200&h=500' },
+        { id: 4, name: 'Noir Archive', description: 'A monochromatic exploration of form and silhouette.', banner_image: 'https://images.unsplash.com/photo-1550614000-4895a10e1bfd?auto=format&fit=crop&q=80&w=1200&h=500' },
     ];
 
-    // Add more fillers to reach 35 products
-    for (let i = 9; i <= 35; i++) {
-        const cat = leafCategoryIds[i % leafCategoryIds.length];
-        uniqueProducts.push({
-            id: i,
-            name: `Premium Item #${i}`,
-            description:
-                `A high-quality boutique item from our curated collection. Item ${i} represents peak craftsmanship and design.`,
-            price: parseFloat((20 + Math.random() * 200).toFixed(2)),
-            primaryCategoryId: cat,
-            images: [
-                { path: `https://picsum.photos/seed/prod${i}/600/600`, is_primary: 1, sort_order: 0 },
-                ...(i % 3 === 0
-                    ? [{ path: `https://picsum.photos/seed/prod${i}-b/600/600`, is_primary: 0, sort_order: 1 }]
-                    : []),
-            ],
-            rating: parseFloat((4 + Math.random()).toFixed(1)),
-            reviews: Math.floor(Math.random() * 500),
-            badge: i % 7 === 0 ? 'Trending' : null,
-        });
-    }
+    const productNames = {
+        5: ['Quilted', 'Over-sized', 'Tailored', 'Minimalist', 'Luxe'], // Jackets
+        6: ['Evening', 'Midi', 'Cocktail', 'Summer', 'Wrap'], // Dresses
+        7: ['Crystalline', 'Amethyst', 'Obsidian', 'Diamond', 'Opal'], // Jewelry
+        8: ['Aviator', 'Diver', 'Chronograph', 'Quartz', 'Lunar'], // Watches
+        9: ['Tech', 'Retro', 'Prime', 'Elevate', 'Aero'], // Sneakers
+        10: ['Tote', 'Clutch', 'Backpack', 'Satchel', 'Hobo'] // Handbags
+    };
 
-    const users = [
-        {
-            device_id: 'user-01',
-            username: 'Alex Sterling',
-            email: 'alex@example.com',
-            phone_number: '123-456-7890',
-            is_confirmed: 1,
-            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-            location: 'London, UK',
-        },
-        {
-            device_id: 'user-02',
-            username: 'Sophia Valentine',
-            email: 'sophia@example.com',
-            phone_number: '234-567-8901',
-            is_confirmed: 1,
-            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-            location: 'Paris, FR',
-        },
-        {
-            device_id: 'user-03',
-            username: 'Marco Rossi',
-            email: 'marco@example.com',
-            phone_number: '345-678-9012',
-            is_confirmed: 1,
-            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden',
-            location: 'Milan, IT',
-        },
-        {
-            device_id: 'user-04',
-            username: 'Elena Gilbert',
-            email: 'elena@example.com',
-            phone_number: '456-789-0123',
-            is_confirmed: 1,
-            avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe',
-            location: 'New York, USA',
-        },
-    ];
-
-    const reviews = [
-        {
-            product_id: 1,
-            device_id: 'user-01',
-            rating: 5,
-            comment:
-                'Absolutely breathtaking performance. Worth every penny.',
-            likes_count: 125,
-        },
-        {
-            product_id: 2,
-            device_id: 'user-02',
-            rating: 5,
-            comment:
-                'Noise canceling is on another level. Super premium build.',
-            likes_count: 98,
-        },
-        {
-            product_id: 3,
-            device_id: 'user-03',
-            rating: 5,
-            comment:
-                'Cafe-quality at home. Easy to clean and looks stunning.',
-            likes_count: 110,
-        },
-        {
-            product_id: 4,
-            device_id: 'user-04',
-            rating: 4,
-            comment:
-                'Great watch, battery lasts for days even with GPS.',
-            likes_count: 45,
-        },
-    ];
-
-    const heroProducts = [
-        { product_id: 1, detail_text: 'M3 Max Chip | 128GB Unified Memory', display_order: 1, is_active: 1 },
-        { product_id: 2, detail_text: '40mm Drivers | 60h Battery Life', display_order: 2, is_active: 1 },
-        { product_id: 3, detail_text: 'Barista-grade Pressure | Steam Wand', display_order: 3, is_active: 1 },
-    ];
-
-    const promotions = [
-        {
-            id: 1,
-            title: 'New Year Mega Sale 🎉',
-            subtitle: 'Up to 20% off selected items',
-            description: 'Fresh year, fresh gear. Limited time discounts on top picks.',
-            image_path:
-                'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=1200&h=500',
-            promo_type: 'percent',
-            discount_value: 20,
-            coupon_code: 'NY2026',
-            start_at: null,
-            end_at: null,
-            priority: 10,
-            is_active: 1,
-        },
-        {
-            id: 2,
-            title: 'Electronics Flash Deal ⚡',
-            subtitle: 'Headphones + Watches specials',
-            description: 'Blink and it’s gone. Best deals for your daily tech.',
-            image_path:
-                'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200&h=500',
-            promo_type: 'percent',
-            discount_value: 15,
-            coupon_code: null,
-            start_at: null,
-            end_at: null,
-            priority: 5,
-            is_active: 1,
-        },
-    ];
-
-    const promoCategoryLinks = [
-        { promotion_id: 2, category_id: 4 }, // Electronics (parent)
-        { promotion_id: 2, category_id: 11 }, // Headphones (sub)
-        { promotion_id: 2, category_id: 12 }, // Watches (sub)
-    ];
-
-    const promoProductLinks = [
-        { promotion_id: 1, product_id: 1 },
-        { promotion_id: 1, product_id: 2 },
-        { promotion_id: 2, product_id: 2 },
-        { promotion_id: 2, product_id: 4 },
-    ];
+    const prefixes = ['Urban', 'Heritage', 'Alpine', 'Zenith', 'Velvet', 'Midnight', 'Ethereal', 'Nomad', 'Apex', 'Vanguard'];
 
     db.serialize(() => {
-        // categories
-        const categoryStmt = db.prepare(`INSERT INTO categories (id, name, icon, parent_id) VALUES (?, ?, ?, ?)`);
-        categories.forEach((c) => categoryStmt.run(c.id, c.name, c.icon, c.parent_id));
-        categoryStmt.finalize();
+        // 1. Standard Sizes & Colors
+        const sizeStmt = db.prepare(`INSERT INTO sizes (name, category_type) VALUES (?, ?)`);
+        sizes.forEach(s => sizeStmt.run(s.name, s.type));
+        sizeStmt.finalize();
 
-        // products, category links, images
-        const productStmt = db.prepare(
-            `INSERT INTO products (id, name, description, price, average_rating, review_count, badge) VALUES (?, ?, ?, ?, ?, ?, ?)`
-        );
-        const pcStmt = db.prepare(
-            `INSERT INTO product_categories (product_id, category_id, is_primary) VALUES (?, ?, ?)`
-        );
-        const imageStmt = db.prepare(
-            `INSERT INTO product_images (product_id, image_path, is_primary, sort_order) VALUES (?, ?, ?, ?)`
-        );
+        const colorStmt = db.prepare(`INSERT INTO colors (name, hex_code) VALUES (?, ?)`);
+        colors.forEach(c => colorStmt.run(c.name, c.hex));
+        colorStmt.finalize();
 
-        uniqueProducts.forEach((p) => {
-            productStmt.run(p.id, p.name, p.description, p.price, p.rating, p.reviews, p.badge);
+        // 2. Categories, Collections, & Promotions (Parents)
+        const catStmt = db.prepare(`INSERT INTO categories (id, name, icon, description, banner_image, parent_id) VALUES (?, ?, ?, ?, ?, ?)`);
+        [...parentCategories, ...subCategories].forEach(c => catStmt.run(c.id, c.name, c.icon, c.description, c.banner_image, c.parent_id));
+        catStmt.finalize();
 
-            // primary category
-            pcStmt.run(p.id, p.primaryCategoryId, 1);
+        const collStmt = db.prepare(`INSERT INTO collections (id, name, description, banner_image) VALUES (?, ?, ?, ?)`);
+        collections.forEach(c => collStmt.run(c.id, c.name, c.description, c.banner_image));
+        collStmt.finalize();
 
-            // image rows
-            p.images.forEach((img) => {
-                imageStmt.run(p.id, img.path, img.is_primary ? 1 : 0, img.sort_order ?? 0);
-            });
-        });
+        db.run(`INSERT INTO promotions (id, title, subtitle, description, promo_type, discount_value, coupon_code, is_active) VALUES (1, 'SEASONAL SALE', 'Up to 50% Off', 'Celebrate the season with incredible savings on our top picks.', 'percent', 50, 'SEASON50', 1)`);
+        db.run(`INSERT INTO promotions (id, title, subtitle, description, promo_type, discount_value, coupon_code, is_active) VALUES (2, 'EXCLUSIVE DROP', 'Members Only Deal', 'Get early access and 15% off the new collection.', 'percent', 15, 'MEMBER15', 1)`);
 
-        productStmt.finalize();
-        pcStmt.finalize();
-        imageStmt.finalize();
-
-        // users
-        const userStmt = db.prepare(
-            `INSERT INTO users (device_id, username, email, phone_number, is_confirmed, avatar_url, location) VALUES (?, ?, ?, ?, ?, ?, ?)`
-        );
-        users.forEach((u) =>
-            userStmt.run(u.device_id, u.username, u.email, u.phone_number, u.is_confirmed, u.avatar_url, u.location)
-        );
+        // 3. Users (Level 0 Parent for social features)
+        const userStmt = db.prepare(`INSERT INTO users (device_id, username, email, phone_number, is_confirmed, avatar_url) VALUES (?, ?, ?, ?, 1, ?)`);
+        for (let i = 1; i <= 50; i++) {
+            const username = `User_${i}`;
+            userStmt.run(`user-${i}`, username, `user${i}@example.com`, `+1-555-${1000 + i}`, `https://api.dicebear.com/7.x/avataaars/svg?seed=user${i}`);
+        }
         userStmt.finalize();
 
-        // reviews
-        const reviewStmt = db.prepare(`INSERT INTO reviews (product_id, device_id, rating, comment, likes_count) VALUES (?, ?, ?, ?, ?)`);
-        reviews.forEach((r) => reviewStmt.run(r.product_id, r.device_id, r.rating, r.comment, r.likes_count));
-        reviewStmt.finalize();
+        // 4. Mass Products (200+)
+        const prodStmt = db.prepare(`INSERT INTO products (id, collection_id, name, description, price, badge) VALUES (?, ?, ?, ?, ?, ?)`);
+        const pcStmt = db.prepare(`INSERT INTO product_categories (product_id, category_id, is_primary) VALUES (?, ?, ?)`);
+        const imgStmt = db.prepare(`INSERT INTO product_images (product_id, image_path, is_primary) VALUES (?, ?, ?)`);
+        const varStmt = db.prepare(`INSERT INTO product_variants (product_id, size_id, color_id, stock_quantity) VALUES (?, ?, ?, ?)`);
 
-        // hero products
-        const heroStmt = db.prepare(`INSERT INTO hero_products (product_id, detail_text, display_order, is_active) VALUES (?, ?, ?, ?)`);
-        heroProducts.forEach((hp) => heroStmt.run(hp.product_id, hp.detail_text, hp.display_order, hp.is_active));
-        heroStmt.finalize();
+        // Helper to fetch IDs after inserts
+        db.all(`SELECT id, category_type FROM sizes`, [], (err, allSizes) => {
+            db.all(`SELECT id FROM colors`, [], (err, allColors) => {
 
-        // promotions
-        const promoStmt = db.prepare(
-            `INSERT INTO promotions (id, title, subtitle, description, image_path, promo_type, discount_value, coupon_code, start_at, end_at, priority, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        );
-        promotions.forEach((pr) =>
-            promoStmt.run(
-                pr.id,
-                pr.title,
-                pr.subtitle,
-                pr.description,
-                pr.image_path,
-                pr.promo_type,
-                pr.discount_value,
-                pr.coupon_code,
-                pr.start_at,
-                pr.end_at,
-                pr.priority,
-                pr.is_active
-            )
-        );
-        promoStmt.finalize();
+                for (let i = 1; i <= 210; i++) {
+                    const subCat = subCategories[i % subCategories.length];
+                    const collection = collections[i % collections.length];
+                    const prefix = prefixes[i % prefixes.length];
+                    const baseName = productNames[subCat.id][i % productNames[subCat.id].length];
+                    const name = `${prefix} ${baseName} ${subCat.name.replace(' & ', ' ').replace('s', '')}`;
+                    const price = parseFloat((30 + Math.random() * 970).toFixed(2));
+                    const badge = i % 15 === 0 ? 'Trending' : (i % 25 === 0 ? 'Limited' : null);
 
-        const promoCatStmt = db.prepare(`INSERT INTO promotion_categories (promotion_id, category_id) VALUES (?, ?)`);
-        promoCategoryLinks.forEach((x) => promoCatStmt.run(x.promotion_id, x.category_id));
-        promoCatStmt.finalize();
+                    prodStmt.run(i, collection.id, name, `Premium quality ${name} designed for the modern fashion enthusiast.`, price, badge);
+                    pcStmt.run(i, subCat.id, 1);
+                    imgStmt.run(i, `https://picsum.photos/seed/fashion${i}/800/800`, 1);
 
-        const promoProdStmt = db.prepare(`INSERT INTO promotion_products (promotion_id, product_id) VALUES (?, ?)`);
-        promoProductLinks.forEach((x) => promoProdStmt.run(x.promotion_id, x.product_id));
-        promoProdStmt.finalize(() => {
-            console.log('✅ Database seeded with categories (incl subcategories), products (multi-images), reviews, hero products, and promotions!');
-            process.exit(0);
+                    // Variants (Normalize Sizes/Colors)
+                    const relevantSizes = allSizes.filter(s => s.category_type === subCat.type);
+                    const pickedColors = allColors.sort(() => 0.5 - Math.random()).slice(0, 2);
+                    const pickedSizes = relevantSizes.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+                    pickedColors.forEach(c => {
+                        pickedSizes.forEach(s => {
+                            varStmt.run(i, s.id, c.id, Math.floor(Math.random() * 50));
+                        });
+                    });
+                }
+
+                prodStmt.finalize();
+                pcStmt.finalize();
+                imgStmt.finalize();
+                varStmt.finalize();
+
+                // 5. Mass Reviews (1000+) & Social Proof
+                const reviewStmt = db.prepare(`INSERT INTO reviews (product_id, collection_id, promotion_id, device_id, rating, comment, likes_count) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+                const comments = ["Absolutely stunning!", "Best purchase ever.", "Quality is top-notch.", "Highly recommend.", "Perfect fit.", "A bit pricey but worth it.", "Love the color!", "Shipping was fast.", "Good customer service.", "Will buy again."];
+
+                for (let i = 1; i <= 1000; i++) {
+                    const rating = Math.floor(Math.random() * 2) + 4; // 4-5 stars
+                    const comment = comments[i % comments.length];
+                    const userId = `user-${Math.floor(Math.random() * 50) + 1}`;
+                    const likes = Math.floor(Math.random() * 100);
+
+                    if (i <= 800) { // Product reviews
+                        reviewStmt.run(Math.floor(Math.random() * 210) + 1, null, null, userId, rating, comment, likes);
+                    } else if (i <= 950) { // Collection reviews
+                        reviewStmt.run(null, (i % 4) + 1, null, userId, rating, `I love this collection! ${comment}`, likes);
+                    } else { // Promotion reviews
+                        reviewStmt.run(null, null, (i % 2) + 1, userId, rating, `Great offer! ${comment}`, likes);
+                    }
+                }
+                reviewStmt.finalize();
+
+                // 6. Bulk Likes (5000+)
+                const pLikeStmt = db.prepare(`INSERT OR IGNORE INTO product_likes (user_id, product_id) VALUES (?, ?)`);
+                const cLikeStmt = db.prepare(`INSERT OR IGNORE INTO collection_likes (user_id, collection_id) VALUES (?, ?)`);
+
+                for (let i = 1; i <= 5000; i++) {
+                    const userId = `user-${Math.floor(Math.random() * 50) + 1}`;
+                    if (i % 10 !== 0) {
+                        pLikeStmt.run(userId, Math.floor(Math.random() * 210) + 1);
+                    } else {
+                        cLikeStmt.run(userId, Math.floor(Math.random() * 4) + 1);
+                    }
+                }
+
+                pLikeStmt.finalize();
+                cLikeStmt.finalize(() => {
+                    // 7. Hero
+                    db.run(`INSERT INTO hero_products (product_id, detail_text, display_order) VALUES (10, 'Signature Evening Elegance', 1)`);
+                    db.run(`INSERT INTO hero_products (product_id, detail_text, display_order) VALUES (25, 'Modern Streetwear Precision', 2)`);
+                    db.run(`INSERT INTO hero_products (product_id, detail_text, display_order) VALUES (40, 'Timeless Luxury Accessories', 3)`);
+
+                    // Update average ratings/counts
+                    db.serialize(() => {
+                        db.run(`UPDATE products SET 
+                            average_rating = (SELECT IFNULL(AVG(rating), 0) FROM reviews WHERE product_id = products.id),
+                            review_count = (SELECT COUNT(*) FROM reviews WHERE product_id = products.id)`);
+
+                        db.run(`UPDATE collections SET 
+                            average_rating = (SELECT IFNULL(AVG(rating), 0) FROM reviews WHERE collection_id = collections.id),
+                            review_count = (SELECT COUNT(*) FROM reviews WHERE collection_id = collections.id)`);
+
+                        db.run(`UPDATE promotions SET 
+                            average_rating = (SELECT IFNULL(AVG(rating), 0) FROM reviews WHERE promotion_id = promotions.id),
+                            review_count = (SELECT COUNT(*) FROM reviews WHERE promotion_id = promotions.id)`, () => {
+                            console.log('✅ Mass seeding complete: 210 products, 1000 reviews, 5000 likes.');
+                            db.run('PRAGMA foreign_keys = ON', () => {
+                                process.exit(0);
+                            });
+                        });
+                    });
+                });
+            });
         });
     });
 };
 
-seed().catch((err) => {
-    console.error(err);
+seed().catch(err => {
+    console.error('❌ Seeding failed:', err);
     process.exit(1);
 });

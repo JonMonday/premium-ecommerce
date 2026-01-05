@@ -1,0 +1,37 @@
+/* Checkout.css */
+
+.checkout-summary {
+    background: #f9f9f9;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.checkout-summary p {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.checkout-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 1.1rem;
+}
+
+.checkout-btn {
+    border-radius: 12px;
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
+}
